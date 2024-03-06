@@ -1,0 +1,21 @@
+#include <Arduino.h>
+
+#include <AccelStepper.h>
+AccelStepper motor1(1, 12, 14);
+
+
+
+
+
+void setup()
+{  
+motor1.setMaxSpeed(5000); //Definimos velocidad maxima motor 1
+motor1.setSpeed(-100);     
+    
+}
+
+void loop()
+{
+   motor1.runSpeed();
+    
+}
