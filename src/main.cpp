@@ -87,6 +87,22 @@ lcd.backlight(); // Damos luz a la LCD
 lcd.setCursor(0,0); //Definimos la posicion del cursos apra imprimir en la LCD (Columna, Fila)
 lcd.print("Reciclador PET"); //Imprimimos en la posicion del cursor
 
+    lcd.setCursor(0,1);
+    lcd.print("Velo:");
+    lcd.setCursor(10,1);
+    lcd.print("min:");
+    lcd.setCursor(0,2);
+    lcd.print("Temp:");
+    lcd.setCursor(11,2);
+    lcd.print("SP:");
+    lcd.setCursor(10,3);
+    lcd.print("P:");
+    lcd.setCursor(7,3);
+    lcd.print("%");
+    lcd.setCursor(0,3);
+    lcd.print("PWM:");
+
+
 //-->NEMA 17
 pinMode( enPin ,OUTPUT); //Definimos el pin del ENABLE del motor NEMA17 como salida
 digitalWrite( enPin , LOW); //Habilitamos salida el funcionamiento del motor NEMA17
@@ -245,58 +261,63 @@ else
   porcentaje_PWM = map(Output, 0, 255, 0, 100); //Mapeamos el PWM para expresar en el LCD en funcion %
 
 //-->LCD
-if (millis() > (tiempo_ultimo_refresh_LCD + 5000 ) ) // Refrescamos al LCD unicamente cada cierto tiempo, en funcion del ultimo refresco.
+if (millis() > (tiempo_ultimo_refresh_LCD + 500 ) ) // Refrescamos al LCD unicamente cada cierto tiempo, en funcion del ultimo refresco.
 {
-    lcd.setCursor(0,1);
-    lcd.print("Velo:");
+
     lcd.setCursor(5,1);
     lcd.print("    ");
+        myStepper.runSpeed(); //Continuamos moviendo el motor
+
     lcd.setCursor(5,1);
     lcd.print(velocidad*direccion);
-
-    lcd.setCursor(10,1);
-    lcd.print("min:");
+         myStepper.runSpeed(); //Continuamos moviendo el motor
+ 
     lcd.setCursor(14,1);
     lcd.print(minutos);
+        myStepper.runSpeed(); //Continuamos moviendo el motor
 
-    lcd.setCursor(0,2);
-    lcd.print("Temp:");
     lcd.setCursor(6,2);
     lcd.print("   ");
+        myStepper.runSpeed(); //Continuamos moviendo el motor
+
     lcd.setCursor(6,2);
     lcd.print(temperatura,0);
+        myStepper.runSpeed(); //Continuamos moviendo el motor
 
-    lcd.setCursor(11,2);
-    lcd.print("SP:");
     lcd.setCursor(15,2);
     lcd.print("   ");
+        myStepper.runSpeed(); //Continuamos moviendo el motor
+
     lcd.setCursor(15,2);
     lcd.print(setpoint_mapped,0);
+        myStepper.runSpeed(); //Continuamos moviendo el motor
 
-    lcd.setCursor(0,3);
-    lcd.print("PWM:");
     lcd.setCursor(4,3);
     lcd.print("   ");
+            myStepper.runSpeed(); //Continuamos moviendo el motor
+
     lcd.setCursor(4,3);
     lcd.print(porcentaje_PWM,0);
+            myStepper.runSpeed(); //Continuamos moviendo el motor
+
     lcd.setCursor(7,3);
     lcd.print("%");
+        myStepper.runSpeed(); //Continuamos moviendo el motor
 
-    lcd.setCursor(0,3);
-    lcd.print("PWM:");
     lcd.setCursor(4,3);
     lcd.print("   ");
+        myStepper.runSpeed(); //Continuamos moviendo el motor
+
     lcd.setCursor(4,3);
     lcd.print(porcentaje_PWM,0);
-    lcd.setCursor(7,3);
-    lcd.print("%");
+        myStepper.runSpeed(); //Continuamos moviendo el motor
 
-    lcd.setCursor(10,3);
-    lcd.print("P:");
     lcd.setCursor(9,3);
     lcd.print("           ");
+        myStepper.runSpeed(); //Continuamos moviendo el motor
     lcd.setCursor(9,3);
     lcd.print(estado);
+        myStepper.runSpeed(); //Continuamos moviendo el motor
 
     tiempo_ultimo_refresh_LCD = millis(); // Almaceno en la variale el tiempo del ultimo refresco para poder calcular el momento de refresco proximo.
 }
