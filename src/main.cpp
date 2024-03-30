@@ -17,6 +17,7 @@ int setpoint_mapped; //variable para mapear el valor del setpoint a partir de la
 
 //-->LCD
 LiquidCrystal_I2C lcd(0x27, 20, 4); // Definicion de la LCD (direccion, columnas, filas)
+int refresco_linea = 0; //Variable para refrescar la LCD por lineas
 
 //-->MOTOR NEMA 17
 const int dirPin = 14; //Pin donde cableamos la DIR del dvr2588
@@ -42,7 +43,7 @@ float temperatura_final; //Variable para almacenar el valor de temperatura tras 
 
 //--> PID
 float Setpoint, Input, Output; // Definimos las variables para uso del PID
-float Kp = 1, Ki = 2.2, Kd = 0.1; // Definimos las variables para las ganancias del PID
+float Kp = 0.5, Ki = 0.2, Kd = 0.1; // Definimos las variables para las ganancias del PID
 int porcentaje_PWM; // Variable apra convertir PWM en porcentaje
 QuickPID myPID(&Input, &Output, &Setpoint); //Asignamos variables a los aprametros del PID
 
@@ -261,9 +262,12 @@ else
   porcentaje_PWM = map(Output, 0, 255, 0, 100); //Mapeamos el PWM para expresar en el LCD en funcion %
 
 //-->LCD
-if (millis() > (tiempo_ultimo_refresh_LCD + 500 ) ) // Refrescamos al LCD unicamente cada cierto tiempo, en funcion del ultimo refresco.
+if (millis() > (tiempo_ultimo_refresh_LCD + 200 ) ) // Refrescamos al LCD unicamente cada cierto tiempo, en funcion del ultimo refresco.
 {
 
+switch(refresco_linea)
+{
+case 0:
     lcd.setCursor(5,1);
     lcd.print("    ");
         myStepper.runSpeed(); //Continuamos moviendo el motor
@@ -271,11 +275,13 @@ if (millis() > (tiempo_ultimo_refresh_LCD + 500 ) ) // Refrescamos al LCD unicam
     lcd.setCursor(5,1);
     lcd.print(velocidad*direccion);
          myStepper.runSpeed(); //Continuamos moviendo el motor
- 
+ break;
+ case 1:
     lcd.setCursor(14,1);
     lcd.print(minutos);
         myStepper.runSpeed(); //Continuamos moviendo el motor
-
+ break;
+ case 2:
     lcd.setCursor(6,2);
     lcd.print("   ");
         myStepper.runSpeed(); //Continuamos moviendo el motor
@@ -283,7 +289,8 @@ if (millis() > (tiempo_ultimo_refresh_LCD + 500 ) ) // Refrescamos al LCD unicam
     lcd.setCursor(6,2);
     lcd.print(temperatura,0);
         myStepper.runSpeed(); //Continuamos moviendo el motor
-
+ break;
+ case 3:
     lcd.setCursor(15,2);
     lcd.print("   ");
         myStepper.runSpeed(); //Continuamos moviendo el motor
@@ -291,7 +298,8 @@ if (millis() > (tiempo_ultimo_refresh_LCD + 500 ) ) // Refrescamos al LCD unicam
     lcd.setCursor(15,2);
     lcd.print(setpoint_mapped,0);
         myStepper.runSpeed(); //Continuamos moviendo el motor
-
+ break;
+ case 4:
     lcd.setCursor(4,3);
     lcd.print("   ");
             myStepper.runSpeed(); //Continuamos moviendo el motor
@@ -299,11 +307,8 @@ if (millis() > (tiempo_ultimo_refresh_LCD + 500 ) ) // Refrescamos al LCD unicam
     lcd.setCursor(4,3);
     lcd.print(porcentaje_PWM,0);
             myStepper.runSpeed(); //Continuamos moviendo el motor
-
-    lcd.setCursor(7,3);
-    lcd.print("%");
-        myStepper.runSpeed(); //Continuamos moviendo el motor
-
+ break;
+ case 5:
     lcd.setCursor(4,3);
     lcd.print("   ");
         myStepper.runSpeed(); //Continuamos moviendo el motor
@@ -311,16 +316,22 @@ if (millis() > (tiempo_ultimo_refresh_LCD + 500 ) ) // Refrescamos al LCD unicam
     lcd.setCursor(4,3);
     lcd.print(porcentaje_PWM,0);
         myStepper.runSpeed(); //Continuamos moviendo el motor
-
+ break;
+ case 6:
     lcd.setCursor(9,3);
     lcd.print("           ");
         myStepper.runSpeed(); //Continuamos moviendo el motor
     lcd.setCursor(9,3);
     lcd.print(estado);
         myStepper.runSpeed(); //Continuamos moviendo el motor
+ break;
+}
+refresco_linea = refresco_linea +1 ;
+
 
     tiempo_ultimo_refresh_LCD = millis(); // Almaceno en la variale el tiempo del ultimo refresco para poder calcular el momento de refresco proximo.
 }
+if (refresco_linea==7) {refresco_linea=0;}
 
 }
 
