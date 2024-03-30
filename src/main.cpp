@@ -1,3 +1,5 @@
+//Reciclador PET ESP 32 --> NO freeRTOS
+
 #include <Arduino.h>
 #include <LiquidCrystal_I2C.h>
 #include <AccelStepper.h>
@@ -76,79 +78,21 @@ bool calentador = false; // variable apra activar/desactivar el calentador
 int direccion = 1; //variable para definir direccion de giro del motor
 String estado; //Variable para definir estado en la LCD
 
-// LCD
-TaskHandle_t imprimir_LCD; // handle para la tarea de imprimir en al LCD que se ejecutará el CORE0
+void setup()
+{
 
-//--> TAREA para ejecutar en el Core 0
-void refrescar_LCD_codigo ( void* pvParameters ){ 
 //-->LCD    
 lcd.init(); //Iniciamos la LCD segun los pines definidos antes
 lcd.backlight(); // Damos luz a la LCD
 lcd.setCursor(0,0); //Definimos la posicion del cursos apra imprimir en la LCD (Columna, Fila)
-lcd.print("Reciclador PET"); //Imprimimos en la posicion del cursor 
-        lcd.setCursor(0,1);
-        lcd.print("Velo:");  
-        lcd.setCursor(10,1);
-        lcd.print("min:");  
-        lcd.setCursor(0,2);
-        lcd.print("Temp:");
-        lcd.setCursor(11,2);
-        lcd.print("SP:");
-        lcd.setCursor(0,3);
-        lcd.print("PWM:");
-        lcd.setCursor(7,3);
-        lcd.print("%");
-        lcd.setCursor(10,3);
-        lcd.print("P:");
-  for(;;) {
-    //-->LCD
-    if (millis() > (tiempo_ultimo_refresh_LCD + 500 ) ){ // Refrescamos al LCD unicamente cada cierto tiempo, en funcion del ultimo refresco.
+lcd.print("Reciclador PET"); //Imprimimos en la posicion del cursor
 
-        lcd.setCursor(5,1);
-        lcd.print("    ");
-        lcd.setCursor(5,1);
-        lcd.print(velocidad*direccion);
-
-        lcd.setCursor(14,1);
-        lcd.print(minutos);
-
-        lcd.setCursor(6,2);
-        lcd.print("   ");
-        lcd.setCursor(6,2);
-        lcd.print(temperatura,0);
-
-        lcd.setCursor(15,2);
-        lcd.print("   ");
-        lcd.setCursor(15,2);
-        lcd.print(setpoint_mapped,0);
-
-        lcd.setCursor(4,3);
-        lcd.print("   ");
-        lcd.setCursor(4,3);
-        lcd.print(porcentaje_PWM,0);
-
-        lcd.setCursor(4,3);
-        lcd.print("   ");
-        lcd.setCursor(4,3);
-        lcd.print(porcentaje_PWM,0);
-
-        lcd.setCursor(9,3);
-        lcd.print("           ");
-        lcd.setCursor(9,3);
-        lcd.print(estado);
-
-        tiempo_ultimo_refresh_LCD = millis(); // Almaceno en la variale el tiempo del ultimo refresco para poder calcular el momento de refresco proximo.
-    }
-  }
-}
-
-void setup()
-{
 //-->NEMA 17
 pinMode( enPin ,OUTPUT); //Definimos el pin del ENABLE del motor NEMA17 como salida
 digitalWrite( enPin , LOW); //Habilitamos salida el funcionamiento del motor NEMA17
 myStepper.setMaxSpeed(1000); //Definimos la velocidad maxima que peude alcanzar el motor
 myStepper.setAcceleration(100.0); // Definimos la acceleracion del motor
+
 
 //--> MOSFET
 pinMode(pinMosfet, OUTPUT); // Pin de salida del Mosfet del calentador.
@@ -160,16 +104,6 @@ myPID.SetMode(myPID.Control::automatic); //Iniciamos el PID
 //--> PULSADOR
 pinMode(pulsadorPin, INPUT); // Defino pulsador como entrada.
 attachInterrupt(digitalPinToInterrupt(pulsadorPin), contarpulsador, FALLING); // Interrupcion en el pin del pulsador.
-
-//--> LCD // Creo la tarea en el Core 0
-xTaskCreatePinnedToCore(
-      refrescar_LCD_codigo, /* Function to implement the task */
-      "refrescar_LCD_codigo", /* Name of the task */
-      1000,  /* Stack size in words */
-      NULL,  /* Task input parameter */
-      0,  /* Priority of the task */
-      &imprimir_LCD,  /* Task handle. */
-      0); /* Core where the task should run */ 
 
 delay (500);
 }
@@ -310,4 +244,64 @@ else
   analogWrite(pinMosfet, Output); // escribimos en el PWM el valor del output 
   porcentaje_PWM = map(Output, 0, 255, 0, 100); //Mapeamos el PWM para expresar en el LCD en funcion %
 
+//-->LCD
+if (millis() > (tiempo_ultimo_refresh_LCD + 5000 ) ) // Refrescamos al LCD unicamente cada cierto tiempo, en funcion del ultimo refresco.
+{
+    lcd.setCursor(0,1);
+    lcd.print("Velo:");
+    lcd.setCursor(5,1);
+    lcd.print("    ");
+    lcd.setCursor(5,1);
+    lcd.print(velocidad*direccion);
+
+    lcd.setCursor(10,1);
+    lcd.print("min:");
+    lcd.setCursor(14,1);
+    lcd.print(minutos);
+
+    lcd.setCursor(0,2);
+    lcd.print("Temp:");
+    lcd.setCursor(6,2);
+    lcd.print("   ");
+    lcd.setCursor(6,2);
+    lcd.print(temperatura,0);
+
+    lcd.setCursor(11,2);
+    lcd.print("SP:");
+    lcd.setCursor(15,2);
+    lcd.print("   ");
+    lcd.setCursor(15,2);
+    lcd.print(setpoint_mapped,0);
+
+    lcd.setCursor(0,3);
+    lcd.print("PWM:");
+    lcd.setCursor(4,3);
+    lcd.print("   ");
+    lcd.setCursor(4,3);
+    lcd.print(porcentaje_PWM,0);
+    lcd.setCursor(7,3);
+    lcd.print("%");
+
+    lcd.setCursor(0,3);
+    lcd.print("PWM:");
+    lcd.setCursor(4,3);
+    lcd.print("   ");
+    lcd.setCursor(4,3);
+    lcd.print(porcentaje_PWM,0);
+    lcd.setCursor(7,3);
+    lcd.print("%");
+
+    lcd.setCursor(10,3);
+    lcd.print("P:");
+    lcd.setCursor(9,3);
+    lcd.print("           ");
+    lcd.setCursor(9,3);
+    lcd.print(estado);
+
+    tiempo_ultimo_refresh_LCD = millis(); // Almaceno en la variale el tiempo del ultimo refresco para poder calcular el momento de refresco proximo.
 }
+
+}
+
+
+
